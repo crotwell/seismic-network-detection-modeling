@@ -360,15 +360,15 @@ def calc_noise_csv(csvfile):
             if not Sdict[row[1]]:
                 Sdict[row[1]] = collections.defaultdict(dict)
                 Sdict[row[1]]['netsta']="%s-%s" % (row[0].strip(),row[1].strip())
-                Sdict[row[1]]['lat']=np.float(row[2])
-                Sdict[row[1]]['lon']=np.float(row[3])
+                Sdict[row[1]]['lat']=float(row[2])
+                Sdict[row[1]]['lon']=float(row[3])
                 Sdict[row[1]]['chans'] = collections.defaultdict(dict)
             if row[4].strip() == 'V' and not Sdict[row[1]]['chans']['V']:
-                Sdict[row[1]]['chans']['V'] = np.float(row[5])
+                Sdict[row[1]]['chans']['V'] = float(row[5])
             if row[4].strip() == 'H' and not Sdict[row[1]]['chans']['H']:
-                Sdict[row[1]]['chans']['H'] = np.float(row[5])
+                Sdict[row[1]]['chans']['H'] = float(row[5])
             elif row[4].strip() == 'H':
-                Sdict[row[1]]['chans']['H'] = (Sdict[row[1]]['chans']['H'] +np.float(row[5]))/2
+                Sdict[row[1]]['chans']['H'] = (Sdict[row[1]]['chans']['H'] +float(row[5]))/2
     return Sdict
 
 def model_thresh(Sdict,x,y,npick,velerr,nsta=5,dist_cut=250,coeffs='CEUS',xl=[]):
@@ -390,15 +390,15 @@ def model_thresh(Sdict,x,y,npick,velerr,nsta=5,dist_cut=250,coeffs='CEUS',xl=[])
                         xa=np.log10(Sdict[sta]['chans'][chan])*20.
                         if 'V' in chan:
                             model=calc_model(xa,ya,coeffs,phase='P')
-                            stamag=np.min([stamag,np.float(model)])
+                            stamag=np.min([stamag,float(model)])
                         elif 'H' in chan:
                             model=calc_model(xa,ya,coeffs,phase='S')
-                            stamag=np.min([stamag,np.float(model)])
+                            stamag=np.min([stamag,float(model)])
                         stat_results.append(model[0])
                         dists.append(epi_dist / 1000)
-                    Sdict[sta]['Msta']=np.float(stamag)
+                    Sdict[sta]['Msta']=float(stamag)
                     Sdict[sta]['edist']=ya
-                    nsta_results.append(np.float(stamag))
+                    nsta_results.append(float(stamag))
             if np.min(dists) < dist_cut:
                 imags=np.argsort(stat_results)
                 magdist=0
