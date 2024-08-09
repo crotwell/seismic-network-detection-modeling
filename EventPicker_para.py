@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 #Disclaimer:
 
-#This software is preliminary or provisional and is subject to revision. It is 
-#being provided to meet the need for timely best science. The software has not 
-#received final approval by the U.S. Geological Survey (USGS). No warranty, 
-#expressed or implied, is made by the USGS or the U.S. Government as to the 
-#functionality of the software and related material nor shall the fact of release 
-#constitute any such warranty. The software is provided on the condition that 
-#neither the USGS nor the U.S. Government shall be held liable for any damages 
+#This software is preliminary or provisional and is subject to revision. It is
+#being provided to meet the need for timely best science. The software has not
+#received final approval by the U.S. Geological Survey (USGS). No warranty,
+#expressed or implied, is made by the USGS or the U.S. Government as to the
+#functionality of the software and related material nor shall the fact of release
+#constitute any such warranty. The software is provided on the condition that
+#neither the USGS nor the U.S. Government shall be held liable for any damages
 #resulting from the authorized or unauthorized use of the software.
 
 from obspy.clients.fdsn import Client
@@ -45,7 +45,7 @@ def process_stat(stat,cat):
         print("Can't open input params")
     slats.append(stat.latitude)
     slons.append(stat.longitude)
-    
+
     n=-1
     lats = []
     lons = []
@@ -96,7 +96,7 @@ def process_stat(stat,cat):
                     nfail=nfail+1
         except:
             print("Problem getting arrivals %s-%s %s" % (cnet.code, stat.code, tim))
-            nfail=nfail+1   
+            nfail=nfail+1
     with open('FPoutput/resultsICF%s%s.pickle'%(cnet.code, stat.code), 'wb') as f:
         #pickle.dump([results, slats, slons, lats, lons, inventory, cat], f)
         pickle.dump([results, stat], f)
@@ -111,7 +111,7 @@ def process_stat(stat,cat):
 with open('FPinputparams.pickle', 'rb') as f:
     Tlong, domper, Tup, s1, s2, starttime, endtime, lat, lon, rad, max_epi_dist, stas, nets, chans, debug, Terr, fmin, fmax = pickle.load(f)
 f.close()
-        
+
 cat1 = client.get_events(starttime=starttime, endtime=endtime, minmagnitude=1.9,latitude=lat, longitude=lon, maxradius=rad)
 print(len(cat1))
 
@@ -131,10 +131,10 @@ for cnet in inventory:
 
 def parallel_runs(statlist):
     pool = Pool(processes=5)
-    prod_x=partial(process_stat, cat=cat1)  
-    result_list = pool.map(prod_x, statlist) 
+    prod_x=partial(process_stat, cat=cat1)
+    result_list = pool.map(prod_x, statlist)
     print(result_list)
-        
+
 if Para==True:
     if __name__ == '__main__':
         parallel_runs(statlist)
@@ -142,4 +142,3 @@ else:
     for stat in statlist:
         result_list=process_stat(stat,cat1)
         print(result_list)
-

@@ -29,14 +29,19 @@ client = Client("IRIS")
 ##########################################################
 ################# User input Section #####################
 # time for station noise analysis
-starttime = UTCDateTime("2022-07-01 06:00:00")
-endtime = UTCDateTime("2022-07-31 06:10:00")
+starttime = UTCDateTime("2024-07-01 06:00:00")
+endtime = UTCDateTime("2024-07-31 06:10:00")
 
 # coordinates of study area
 #boxcoords=[38.0, -81.0, 48.0, -66] # new england
 #boxcoords=[34.0, -94.0, 41.0, -83] # new madrid
 #boxcoords=[33.5, -100.1, 37.5, -94.4] # oklahoma
-boxcoords=[36.5, -115.0, 42.5, -108.0] # Utah
+#boxcoords=[36.5, -115.0, 42.5, -108.0] # Utah
+# Atlanta
+atl_lat=33.75
+atl_lon=-84.4
+lldelta = 2
+boxcoords=[atl_lat-lldelta, atl_lon-lldelta, atl_lat+lldelta, atl_lon+lldelta]
 
 # attenuation model to use, options are 'CEUS' or 'UTAH'
 """
@@ -46,7 +51,7 @@ boxcoords=[36.5, -115.0, 42.5, -108.0] # Utah
     thresholds that it produces are lower in magnitude and represents what an analyst should be able to pick.
     The 'UTAH' model is currently in Beta mode
 """
-atten='UTAH'
+atten='CEUS'
 
 # in degrees, box coords buffer to select station out side of box
 bb=2
@@ -74,7 +79,7 @@ if waveform_or_psd == 'psd':
 
 
 # title to be used for saving files
-titl="utah" # title to be used for saving and loading files
+titl="atlanta" # title to be used for saving and loading files
 
 if runcsvtest:
     # for csv test, use these values
@@ -92,7 +97,7 @@ if calc:
     # build an inventory
     stas= "*"
     #nets="IU,US,N4,NE,TA,PE,CN,NM,ET,AG,AO"
-    nets="UU,US,N4,C0"
+    nets="IU,US,N4,CO,ET,NM"
 #    nets="CN,N4"
 #    nets="IU,US,N4,NE"
     chans="HH*,BH*,EH*"
@@ -103,9 +108,9 @@ if calc:
 
 
     inventory = client.get_stations(network=nets,station=stas,channel=chans,
-                                    starttime=starttime, endtime=endtime, 
-                                    minlatitude=boxcoords[0]-bb, minlongitude=boxcoords[1]-bb, 
-                                    maxlatitude=boxcoords[2]+bb, maxlongitude=boxcoords[3]+bb, 
+                                    starttime=starttime, endtime=endtime,
+                                    minlatitude=boxcoords[0]-bb, minlongitude=boxcoords[1]-bb,
+                                    maxlatitude=boxcoords[2]+bb, maxlongitude=boxcoords[3]+bb,
                                     level='response')
 
 
@@ -120,7 +125,7 @@ if calc:
 
 
 ####     end of user input   ####################
-#############################################################################   
+#############################################################################
 ######### parameters below are default filter parameters for P and S ########
 # defaults
 fmin=1.25
@@ -147,7 +152,7 @@ if calc==True:
         print('Requesting PSDs from MUSTANG')
         if use_profile == True:
             print(f'profile_stat = {profile_stat}')
-            Sdict=tm.get_noise_MUSTANG(inventory,starttime, endtime, fmin, fmax, fminS, fmaxS, 
+            Sdict=tm.get_noise_MUSTANG(inventory,starttime, endtime, fmin, fmax, fminS, fmaxS,
                                        use_profile=True, profile_stat=profile_stat)
         else:
             Sdict=tm.get_noise_MUSTANG(inventory,starttime, endtime, fmin, fmax, fminS,fmaxS)
@@ -166,7 +171,7 @@ else:
         #print(Sdict)
     else:
         print("pickleorcsv must be set to either 'pickle' or 'csv'. ")
-        
+
 ltmin=np.floor(boxcoords[0]/2)*2
 ltmax=np.ceil(boxcoords[2]/2)*2 +2
 lnmin=np.floor(boxcoords[1]/2)*2
@@ -230,14 +235,14 @@ zei = griddata( (x,y), ze, (xi, yi), method='cubic')
 with open('DetectGrid%s%s.pickle'%(titl,starttime.strftime('%Y%m%d%H')),'wb') as f:
     pickle.dump([xi,yi,zi,Sdict],f)
 f.close()
-    
+
 print('plotting...')
 if 1:
     plt.figure(7, figsize=(10,6))
     c1=np.floor(min(z)*10)/10
     c2=np.ceil(max(z+.1)*10)/10
-    #c1=1.0
-    #c2=2.9
+    c1=1.5
+    c2=3.0
     #ax = plt.axes(projection=ccrs.AlbersEqualArea(central_lon, central_lat))
     ax = plt.axes(projection=ccrs.Mercator(central_lon))
     ax.set_extent(extent)
@@ -251,7 +256,7 @@ if 1:
     matplotlib.rcParams['ytick.direction'] = 'out'
 
 #    plt.contourf(xi, yi, zi.reshape(xi.shape), np.arange(c1, c2+.01, 0.1), cmap=plt.cm.plasma, transform=ccrs.PlateCarree() )
-    plt.contourf(xi, yi, zi.reshape(xi.shape), np.arange(c1, c2+.01, 0.25), 
+    plt.contourf(xi, yi, zi.reshape(xi.shape), np.arange(c1, c2+.01, 0.25),
                  cmap=plt.cm.plasma, transform=ccrs.PlateCarree() )
     gridlines=ax.gridlines(draw_labels=True, color='gray', alpha=.8, linestyle=':')
     gridlines.top_labels=False
@@ -270,6 +275,8 @@ if 1:
     #plt.title("%s - %s "% (letter.upper(), content.upper()))
     for sta in Sdict:
         plt.plot(Sdict[sta]['lon'],Sdict[sta]['lat'], 'kd', markersize=4.5, transform=ccrs.PlateCarree())
+    # Atlanta
+    plt.plot(atl_lon, atl_lat, 'o', markersize=10, transform=ccrs.PlateCarree())
 
 if effper>0:
     plt.figure(17, figsize=(10,6))
@@ -319,7 +326,9 @@ if effper>0:
             plt.plot(Sdict[sta]['lon'],Sdict[sta]['lat'], 'kd', markersize=4.5, transform=ccrs.PlateCarree())
         else:
             plt.plot(Sdict[sta]['lon'],Sdict[sta]['lat'], 'b*', markersize=4.5, transform=ccrs.PlateCarree())
-        
+    # Atlanta
+    plt.plot(atl_lon, atl_lat, 'o', markersize=10, transform=ccrs.PlateCarree())
+
 if 1:
     plt.figure(2, figsize=(10,7))
     #ax3 = plt.axes(projection=ccrs.AlbersEqualArea(central_lon, central_lat))
@@ -348,6 +357,8 @@ if 1:
     #plt.title("%s - %s "% (letter.upper(), content.upper()))
     for sta in Sdict:
         plt.plot(Sdict[sta]['lon'],Sdict[sta]['lat'], 'kd', markersize=4.5, transform=ccrs.PlateCarree())
+    # Atlanta
+    plt.plot(atl_lon, atl_lat, 'o', markersize=10, transform=ccrs.PlateCarree())
 
 if 1:
     plt.figure(3, figsize=(10,7))
@@ -379,6 +390,8 @@ if 1:
     #plt.title("%s - %s "% (letter.upper(), content.upper()))
     for sta in Sdict:
         plt.plot(Sdict[sta]['lon'],Sdict[sta]['lat'], 'kd', markersize=4.5, transform=ccrs.PlateCarree())
+    # Atlanta
+    plt.plot(atl_lon, atl_lat, 'o', markersize=10, transform=ccrs.PlateCarree())
 
 #lfeat=cartopy.feature.NaturalEarthFeature(category='physical',name='land',scale='50m',facecolor='none')
 #ofeat=cartopy.feature.NaturalEarthFeature(category='physical',name='ocean',scale='50m',facecolor='none')
@@ -419,6 +432,8 @@ if 1:
             elif Sdict[sta]['chans']['V']:
                 f.write("%s, %4.1f, X, %4.1f, %i, %i \n"%(sta,m25d,eff, Sdict[sta]['hit'],tot))
     #plt.plot(slons,slats, 'kd', markersize=4.5, transform=ccrs.PlateCarree())
+    # Atlanta
+    plt.plot(atl_lon, atl_lat, 'o', markersize=10, transform=ccrs.PlateCarree())
     gridlines=ax2.gridlines(draw_labels=True, color='gray', alpha=.8, linestyle=':')
     gridlines.top_labels=False
     gridlines.right_labels=False
@@ -466,6 +481,6 @@ if 1:
     #plt.title("%s - %s "% (letter.upper(), content.upper()))
     for sta in Sdict:
         plt.plot(Sdict[sta]['lon'],Sdict[sta]['lat'], 'kd', markersize=4.5, transform=ccrs.PlateCarree())
+    # Atlanta
+    plt.plot(atl_lon, atl_lat, 'o', markersize=10, transform=ccrs.PlateCarree())
     plt.show()
-
-    

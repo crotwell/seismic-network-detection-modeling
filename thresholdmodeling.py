@@ -113,7 +113,7 @@ def parse_MUSTANG_psd(stringio):
     for line in lines:
         if line[0] == '#' or line[0].isalpha():
             continue
-        else: 
+        else:
             freq, pwr = line.strip('\n').split(',')
             f_all.append(freq)
             if freq not in f:
@@ -122,7 +122,7 @@ def parse_MUSTANG_psd(stringio):
             else:
                 i_f = f.index(freq)
                 Px[i_f] += float(pwr)
-    try: 
+    try:
         n = f_all.count(f_all[0])
         f = np.array(f, dtype='float')
         Px = np.array(Px)/n
@@ -135,11 +135,11 @@ def parse_MUSTANG_psd(stringio):
 
 def sdict_to_csv(Sdict, csvname):
    """
-   sdict_to_csv: 
+   sdict_to_csv:
 
    Write station dictionary to a csv file for editing
    """
-   csvfile = open(f'{csvname}', 'w') 
+   csvfile = open(f'{csvname}', 'w')
    for stakey in Sdict.keys():
        net = Sdict[stakey]['netsta'].split('-')[0]
        sta = Sdict[stakey]['netsta'].split('-')[1]
@@ -148,12 +148,12 @@ def sdict_to_csv(Sdict, csvname):
        chns = Sdict[stakey]['chans']
        for cha in chns.keys():
            csvfile.write(f'{net}, {sta}, {lat}, {lon}, {cha}, {chns[cha]}\n')
-       
+
    csvfile.close()
    print(f'Wrote station noise values to CSV file {csvname}')
-       
 
-def get_noise_MUSTANG(inventory, starttime, endtime, fmin=1.25, fmax=25., fminS=0.8,fmaxS=12.5, 
+
+def get_noise_MUSTANG(inventory, starttime, endtime, fmin=1.25, fmax=25., fminS=0.8,fmaxS=12.5,
                       use_profile=False, profile_stat=None):
     """
     get_noise_MUSTANG(inventory, starttime, endtime, fmin=1.25, fmax=25., fminS=0.8,fmaxS=12.5, use_profile=False, profile_stat=None):
@@ -161,12 +161,12 @@ def get_noise_MUSTANG(inventory, starttime, endtime, fmin=1.25, fmax=25., fminS=
     Returns a station dictionary that has station info and noise values computed from PSDs calculated by IRIS MUSTANG.
 
     """
-# Remember: convert dB to acceleration RMS values before returning 
-# from Dave: Ok, to get the std of acceleration, start with the PSD values (Px) over a frequency range and convert them from dB back to ground units (A), then sum them over the range*df. Then take the sqrt.  So, it should look like: Stdict[sta.code]['chans']['H'] = np.sqrt(np.sum(df * 10**(Px/10))) 
+# Remember: convert dB to acceleration RMS values before returning
+# from Dave: Ok, to get the std of acceleration, start with the PSD values (Px) over a frequency range and convert them from dB back to ground units (A), then sum them over the range*df. Then take the sqrt.  So, it should look like: Stdict[sta.code]['chans']['H'] = np.sqrt(np.sum(df * 10**(Px/10)))
 # df = spacing in frequency space between each point - DW 29 Jan
-# it's an integration        
+# it's an integration
 # MUSTANG freqs are log-spaced so we have to calculate df explicitly
-# Can use noise profiles - this is a fast way to handle endtime-starttime >> 1 day 
+# Can use noise profiles - this is a fast way to handle endtime-starttime >> 1 day
 # noise profiles are returned by noise-pdf webservice, which cannot do time slices smaller than 1 day
 # Decision: let the user pick what they want, with some warnings?
     if use_profile:
@@ -175,17 +175,17 @@ def get_noise_MUSTANG(inventory, starttime, endtime, fmin=1.25, fmax=25., fminS=
             sys.exit(1)
         print(f'using noise profile for statistic: {profile_stat}' )
         reqbase = 'http://service.iris.edu/mustang/noise-pdf/1/query?nodata=404'
-        reqbase += f'&format=noiseprofile_text&noiseprofile.type={profile_stat}' 
+        reqbase += f'&format=noiseprofile_text&noiseprofile.type={profile_stat}'
         if endtime - starttime < 86400:
             print('Warning: minimum timespan for MUSTANG noise_profile metrics is 1 day')
             print('but your requested endtime - starttime is less than 1 day')
-            print('Proceeding anyway') 
+            print('Proceeding anyway')
     else:
         reqbase = 'http://service.iris.edu/mustang/noise-psd/1/query?nodata=404&format=text'
         if endtime - starttime > 86400:
             print('Requested endtime - starttime is longer than 1 day')
             print('Warning: Requesting many hourly PSDs may slow processing')
-            print('Proceeding anyway, but consider using noise_profile option for faster performance') 
+            print('Proceeding anyway, but consider using noise_profile option for faster performance')
 
     Sdict = collections.defaultdict(dict)
     stnum=-1
@@ -248,7 +248,7 @@ def get_noise_MUSTANG(inventory, starttime, endtime, fmin=1.25, fmax=25., fminS=
                                 raise(e)
                                 print(f'unable to parse returned text for {target}')
                                 continue
-                    
+
 
                         if np.abs(chan.dip) > 45:
                             i_calc, = np.where((f >= fmin) & (f<=fmax)) #fmin, fmax for vertical (P)
@@ -257,7 +257,7 @@ def get_noise_MUSTANG(inventory, starttime, endtime, fmin=1.25, fmax=25., fminS=
                             i_calc, = np.where((f >= fminS) & (f<=fmaxS)) #fminS, fmaxS for horizontal (S)
                             comp = 'H'
 
-                        # Check to make sure it is not dead: 
+                        # Check to make sure it is not dead:
                         # PSD vals should be > -150 dB between 4 and 8 s
                         i_checkdead, = np.where((f <= 1./4) & (f >= 1./8))
                         if (Px[i_checkdead] > -150).all():
@@ -274,7 +274,7 @@ def get_noise_MUSTANG(inventory, starttime, endtime, fmin=1.25, fmax=25., fminS=
 
                         else:
                             print("Possible dead channel %s-%s-%s" % (cnet.code, sta.code,chan.code))
-                    else: 
+                    else:
                         print('data request not successful')
                 except:
                     print("Could not fetch %s-%s-%s" % (cnet.code, sta.code,chan.code))
@@ -285,7 +285,7 @@ def get_noise_MUSTANG(inventory, starttime, endtime, fmin=1.25, fmax=25., fminS=
 def calc_noise(inventory,starttime, endtime, fmin=1.25, fmax=25., fminS=0.8,fmaxS=12.5):
     """
     calc_noise(inventory,starttime, endtime, fmin=1.25, fmax=25., fminS=0.8,fmaxS=12.5)
-    
+
     Returns a station dictionary that has station info and noise values computed
     from data fetched from IRIS.
     """
@@ -334,7 +334,7 @@ def calc_noise(inventory,starttime, endtime, fmin=1.25, fmax=25., fminS=0.8,fmax
                         else:
                             print("Possible dead channel %s-%s-%s" % (cnet.code, sta.code,chan.code))
                     except:
-                        print("Could not fetch %s-%s-%s" % (cnet.code, sta.code,chan.code))   
+                        print("Could not fetch %s-%s-%s" % (cnet.code, sta.code,chan.code))
             if hcount>0:
                 if not Sdict[sta.code]['chans']['H']:
                             Sdict[sta.code]['chans']['H'] = hsum/hcount
@@ -343,7 +343,7 @@ def calc_noise(inventory,starttime, endtime, fmin=1.25, fmax=25., fminS=0.8,fmax
 def calc_noise_csv(csvfile):
     """
     calc_noise_csv(csvfile)
-    
+
     Returns a station dictionary that has station info and noise values read
     in from a csv file. csv file format shoult be
     Net, Station, Lat, Lon, V or H, noiseval
@@ -376,7 +376,7 @@ def model_thresh(Sdict,x,y,npick,velerr,nsta=5,dist_cut=250,coeffs='CEUS',xl=[])
     lnx=0
     for xi in x:
         lnx += 1
-        
+
         for yi in y:
             stat_results=[]
             nsta_results=[]
@@ -413,7 +413,7 @@ def model_thresh(Sdict,x,y,npick,velerr,nsta=5,dist_cut=250,coeffs='CEUS',xl=[])
                 #print("magdist: %3.1f, pick_dists: "%(magdist) + str(dists[imags[0]]))
                 dists=np.sort(dists)
                 stat_results=np.sort(stat_results)
-                nsta_results=np.sort(nsta_results)                    
+                nsta_results=np.sort(nsta_results)
                 #check to see if the nsta stamag is >= stat_results[npick-1]
                 finmag=np.max([stat_results[npick-1],nsta_results[nsta-1]])
                 results.append([xi, yi, finmag, np.min(dists), dists[npick-1], magdist, magdist/dists[npick-1],errtot])
@@ -423,7 +423,7 @@ def model_thresh(Sdict,x,y,npick,velerr,nsta=5,dist_cut=250,coeffs='CEUS',xl=[])
                             Sdict[sta]['skip'] = Sdict[sta]['skip'] + 1
                         else:
                             Sdict[sta]['hit'] = Sdict[sta]['hit'] + 1
-                        
+
                 #print(xi, yi, stat_results[nsta-1])
         print('%3.1f %% done'%(100*lnx/len(x)))
     results=np.asarray(results)
