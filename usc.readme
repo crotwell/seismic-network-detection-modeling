@@ -1,0 +1,23 @@
+
+
+git clone https://github.com/crotwell/seismic-network-detection-modeling.git
+cd seismic-network-detection-modeling
+git checkout atlanta
+
+conda create -n seisnetdetect python=3.10 obspy cartopy
+conda activate seisnetdetect
+
+# edit makeFPparams.py to change nets, latlon, etc.
+
+
+python makeFPparams.py
+# this takes long time, pulls data from IRIS for noise, etc
+# I don't think this needs to be run if using Mustang PDF values
+# as these come from NetThresh_main_work_flow.py
+python EventPicker_para.py
+
+# relatively quick, generates plots
+# edit boxcoords, titl, nets, chans, starttime, endtime
+# possible also nsta, npick to change how many stations,picks are required
+#
+python NetThresh_main_work_flow.py
