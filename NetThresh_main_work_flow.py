@@ -103,10 +103,26 @@ if calc:
 
 
     inventory = client.get_stations(network=nets,station=stas,channel=chans,
-                                    starttime=starttime, endtime=endtime, 
-                                    minlatitude=boxcoords[0]-bb, minlongitude=boxcoords[1]-bb, 
-                                    maxlatitude=boxcoords[2]+bb, maxlongitude=boxcoords[3]+bb, 
+                                    starttime=starttime, endtime=endtime,
+                                    minlatitude=boxcoords[0]-bb, minlongitude=boxcoords[1]-bb,
+                                    maxlatitude=boxcoords[2]+bb, maxlongitude=boxcoords[3]+bb,
                                     level='response')
+
+    # eliminate ?N? strong motion channels from stations that have seismic
+    # channels
+    for cnet in inventory:
+        for sta in cnet:
+            hasSM = False
+            hasVelocity = False
+            velChan = []
+            for c in sta:
+                if c.code[1] == 'N':
+                    hasSM = True
+                if c.code[1] == 'H':
+                    hasVelocity = True
+                    velChan.append(c)
+            if hasSM and hasVelocity:
+                sta.channels = velChan
 
 
     # if you have other sites to add that can't be easily wildcarded, you can add them like this
