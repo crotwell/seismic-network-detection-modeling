@@ -36,7 +36,21 @@ endtime = UTCDateTime("2022-07-31 06:10:00")
 #boxcoords=[38.0, -81.0, 48.0, -66] # new england
 #boxcoords=[34.0, -94.0, 41.0, -83] # new madrid
 #boxcoords=[33.5, -100.1, 37.5, -94.4] # oklahoma
-boxcoords=[36.5, -115.0, 42.5, -108.0] # Utah
+#boxcoords=[36.5, -115.0, 42.5, -108.0] # Utah
+# Atlanta
+atl_lat=33.75
+atl_lon=-84.4
+# title to be used for saving files
+titl="atlanta" # title to be used for saving and loading files
+
+# Columbia
+#atl_lat=34.0
+#atl_lon=-81.0
+# title to be used for saving files
+#titl="columbia" # title to be used for saving and loading files
+
+lldelta = 3
+boxcoords=[atl_lat-lldelta, atl_lon-lldelta, atl_lat+lldelta, atl_lon+lldelta]
 
 # attenuation model to use, options are 'CEUS' or 'UTAH'
 """
