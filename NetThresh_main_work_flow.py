@@ -40,7 +40,16 @@ endtime = UTCDateTime("2024-07-31 06:10:00")
 # Atlanta
 atl_lat=33.75
 atl_lon=-84.4
-lldelta = 2
+# title to be used for saving files
+titl="atlanta" # title to be used for saving and loading files
+
+# Columbia
+#atl_lat=34.0
+#atl_lon=-81.0
+# title to be used for saving files
+#titl="columbia" # title to be used for saving and loading files
+
+lldelta = 3
 boxcoords=[atl_lat-lldelta, atl_lon-lldelta, atl_lat+lldelta, atl_lon+lldelta]
 
 # attenuation model to use, options are 'CEUS' or 'UTAH'
@@ -112,6 +121,22 @@ if calc:
                                     minlatitude=boxcoords[0]-bb, minlongitude=boxcoords[1]-bb,
                                     maxlatitude=boxcoords[2]+bb, maxlongitude=boxcoords[3]+bb,
                                     level='response')
+
+    # eliminate ?N? strong motion channels from stations that have seismic
+    # channels
+    for cnet in inventory:
+        for sta in cnet:
+            hasSM = False
+            hasVelocity = False
+            velChan = []
+            for c in sta:
+                if c.code[1] == 'N':
+                    hasSM = True
+                if c.code[1] == 'H':
+                    hasVelocity = True
+                    velChan.append(c)
+            if hasSM and hasVelocity:
+                sta.channels = velChan
 
 
     # if you have other sites to add that can't be easily wildcarded, you can add them like this
