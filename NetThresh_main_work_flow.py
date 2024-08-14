@@ -87,9 +87,6 @@ if waveform_or_psd == 'psd':
         profile_stat = '90' # must be str. choose a percentile, median, mode, or mean
 
 
-# title to be used for saving files
-titl="atlanta" # title to be used for saving and loading files
-
 if runcsvtest:
     # for csv test, use these values
     starttime = UTCDateTime("2020-08-01 05:00:00")
@@ -109,7 +106,7 @@ if calc:
     nets="IU,US,N4,CO,ET,NM"
 #    nets="CN,N4"
 #    nets="IU,US,N4,NE"
-    chans="HH*,BH*,EH*"
+    chans="HH*,BH*,EH*,HN*"
     #nets="O2,OK,US,N4,TA,GS"
 
 
