@@ -2,6 +2,7 @@
 
 from obspy.clients.fdsn import Client
 import matplotlib.pyplot as plt
+import pandas
 import numpy as np
 import matplotlib.mlab as ml
 from obspy.core import UTCDateTime
@@ -41,13 +42,15 @@ endtime = UTCDateTime("2024-07-31 06:10:00")
 atl_lat=33.75
 atl_lon=-84.4
 # title to be used for saving files
-titl="atlanta" # title to be used for saving and loading files
+titl="Atlanta" # title to be used for saving and loading files
+metroAreaFilename="Atlanta_metro.txt"
 
-# Columbia
-#atl_lat=34.0
-#atl_lon=-81.0
+# Charleston and SC
+atl_lat=34.0
+atl_lon=-81.0
 # title to be used for saving files
-#titl="columbia" # title to be used for saving and loading files
+titl="Charleston" # title to be used for saving and loading files
+metroAreaFilename="Charleston_metro.txt"
 
 lldelta = 3
 boxcoords=[atl_lat-lldelta, atl_lon-lldelta, atl_lat+lldelta, atl_lon+lldelta]
@@ -145,6 +148,15 @@ if calc:
     #inventory += client.get_stations(network=othernets,station=othersites,channel=chans,starttime=starttime,
     #                                    endtime=endtime,  level='response')
 
+# metro area boundary, text, 2 col, space separated
+metro = None
+if metroAreaFilename is not None:
+    metro = pandas.read_table(metroAreaFilename, sep=" ", header=None)
+
+def plotMetro(plt, metro):
+    if metro is None:
+        return
+    plt.plot(metro.get(0), metro.get(1), 'g-', transform=ccrs.PlateCarree())
 
 ####     end of user input   ####################
 #############################################################################
@@ -299,6 +311,7 @@ if 1:
         plt.plot(Sdict[sta]['lon'],Sdict[sta]['lat'], 'kd', markersize=4.5, transform=ccrs.PlateCarree())
     # Atlanta
     plt.plot(atl_lon, atl_lat, 'o', markersize=10, transform=ccrs.PlateCarree())
+    plotMetro(plt, metro)
 
 if effper>0:
     plt.figure(17, figsize=(10,6))
@@ -463,6 +476,7 @@ if 1:
     gridlines.ylocator = mticker.FixedLocator(np.arange(ltmin,ltmax,2))
     gridlines.xformatter = LONGITUDE_FORMATTER
     gridlines.yformatter = LATITUDE_FORMATTER
+    plotMetro(plt, metro)
     f.close()
     #plt.show()
 

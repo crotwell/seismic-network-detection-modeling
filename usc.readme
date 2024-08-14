@@ -4,7 +4,7 @@ git clone https://github.com/crotwell/seismic-network-detection-modeling.git
 cd seismic-network-detection-modeling
 git checkout atlanta
 
-conda create -n seisnetdetect python=3.10 obspy cartopy
+conda create -n seisnetdetect python=3.10 obspy cartopy pandas
 conda activate seisnetdetect
 
 # edit makeFPparams.py to change nets, latlon, etc.
