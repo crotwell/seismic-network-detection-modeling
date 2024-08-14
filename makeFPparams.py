@@ -9,7 +9,7 @@ Tup=0.388
 s1=9.36
 s2=9.6
 
-starttime = UTCDateTime("2022-07-01")
+starttime = UTCDateTime("2024-07-01")
 endtime = UTCDateTime("2024-08-01")
 lat=33.75
 lon=-84.4
